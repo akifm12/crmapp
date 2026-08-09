@@ -1,0 +1,63 @@
+name: bluearrow_app
+description: "Blue Arrow Management Consultants — public site companion app."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+
+  # State management
+  flutter_riverpod: ^2.6.1
+
+  # Navigation
+  go_router: ^14.6.3
+
+  # HTTP
+  dio: ^5.7.0
+
+  # Local storage
+  shared_preferences: ^2.3.3
+  flutter_secure_storage: ^9.2.4
+
+  # UI
+  google_fonts: ^6.2.1
+  url_launcher: ^6.3.1
+  intl: ^0.19.0
+
+  # Calendar
+  add_2_calendar: 3.0.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.2
+  flutter_native_splash: ^2.4.3
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/splash/
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/icon_square.png"
+  adaptive_icon_background: "#1E40AF"
+  adaptive_icon_foreground: "assets/icon/icon_foreground.png"
+  min_sdk_android: 21
+  remove_alpha_ios: true
+
+flutter_native_splash:
+  color: "#1E40AF"
+  image: assets/splash/splash_logo.png
+  android_12:
+    color: "#1E40AF"
+    image: assets/splash/splash_logo.png
+  web: false
