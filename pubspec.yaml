@@ -1,7 +1,7 @@
 name: bluearrow_app
 description: "Blue Arrow Management Consultants — public site companion app."
 publish_to: 'none'
-version: 1.0.1+2
+version: 1.0.2+3
 
 environment:
   sdk: ^3.11.4
