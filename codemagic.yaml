@@ -6,15 +6,16 @@ workflows:
     environment:
       flutter: stable
       groups:
-        # Create an "android_signing" group in Codemagic → Teams → Environment
-        # variables with these three vars:
+        # Create an "android_signing" group under this app's Environment
+        # variables in Codemagic with these four vars (this is the ORIGINAL
+        # keystore the live Play Store app was signed with, not a new one):
         #   CM_KEYSTORE            — base64 of your .jks keystore file
         #   CM_KEYSTORE_PASSWORD   — keystore password
         #   CM_KEY_ALIAS           — key alias
         #   CM_KEY_PASSWORD        — key password
         - android_signing
       vars:
-        PACKAGE_NAME: "ae.bluearrow.app"
+        PACKAGE_NAME: "ae.bluearrow.bamc"
     scripts:
       - name: Set up release keystore
         script: |
@@ -46,9 +47,9 @@ workflows:
         notify:
           success: true
           failure: true
-      # Uncomment once you've connected a Google Play service account in
-      # Codemagic → Teams → Integrations → Google Play, then set the track
-      # you want (internal/alpha/beta/production):
+      # Uncomment once you've connected a Google Play service account under
+      # this app's Integrations → Google Play, then set the track you want
+      # (internal/alpha/beta/production):
       # google_play:
       #   credentials: $GOOGLE_PLAY_SERVICE_ACCOUNT_CREDENTIALS
       #   track: internal
@@ -63,10 +64,10 @@ workflows:
       xcode: latest
       cocoapods: default
       ios_signing:
-        # Connect your Apple Developer account in Codemagic → Teams →
+        # Connect your Apple Developer account in Codemagic under
         # Integrations → Apple Developer Portal, then reference it here.
         distribution_type: app_store
-        bundle_identifier: ae.bluearrow.app
+        bundle_identifier: ae.bluearrow.bamc
       vars:
         XCODE_WORKSPACE: "Runner.xcworkspace"
         XCODE_SCHEME: "Runner"
@@ -94,8 +95,8 @@ workflows:
         notify:
           success: true
           failure: true
-      # Uncomment once your App Store Connect integration is set up in
-      # Codemagic → Teams → Integrations → App Store Connect:
+      # Uncomment once your App Store Connect integration is set up under
+      # this app's Integrations → App Store Connect:
       # app_store_connect:
       #   auth: integration
       #   submit_to_testflight: true
