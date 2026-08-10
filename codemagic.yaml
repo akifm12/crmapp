@@ -108,6 +108,10 @@ workflows:
               -out $CM_BUILD_DIR/ios_distribution_export.p12 \
               -password "pass:$IOS_CERT_P12_PASSWORD"
             echo "Certificate exported to artifacts as ios_distribution_export.p12 — download it, base64-encode it, and save it as CM_IOS_CERTIFICATE_P12 so future builds reuse it instead of creating a new one."
+            # Import it into THIS build's keychain too, so exportArchive can find it now.
+            keychain add-certificates \
+              --certificate $CM_BUILD_DIR/ios_distribution_export.p12 \
+              --certificate-password "$IOS_CERT_P12_PASSWORD"
           else
             # Certificate already persisted and imported above — just fetch/create the profile.
             app-store-connect fetch-signing-files "$BUNDLE_ID" \
