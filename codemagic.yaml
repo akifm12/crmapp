@@ -100,13 +100,11 @@ workflows:
             app-store-connect fetch-signing-files "$BUNDLE_ID" \
               --type IOS_APP_STORE \
               --certificate-key "@file:$CM_BUILD_DIR/ios_distribution.key" \
+              --p12-password "$IOS_CERT_P12_PASSWORD" \
               --create
-            CERT_FILE=$(ls -t "/Users/builder/Library/Developer/Xcode/UserData/Certificates"/*.cer | head -1)
-            openssl pkcs12 -export \
-              -inkey $CM_BUILD_DIR/ios_distribution.key \
-              -in "$CERT_FILE" \
-              -out $CM_BUILD_DIR/ios_distribution_export.p12 \
-              -password "pass:$IOS_CERT_P12_PASSWORD"
+            # fetch-signing-files already saves the cert+key as a .p12 — just grab it.
+            CERT_P12=$(ls -t "/Users/builder/Library/Developer/Xcode/UserData/Certificates"/*.p12 | head -1)
+            cp "$CERT_P12" $CM_BUILD_DIR/ios_distribution_export.p12
             echo "Certificate exported to artifacts as ios_distribution_export.p12 — download it, base64-encode it, and save it as CM_IOS_CERTIFICATE_P12 so future builds reuse it instead of creating a new one."
             # Import it into THIS build's keychain too, so exportArchive can find it now.
             keychain add-certificates \
