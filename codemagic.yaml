@@ -59,6 +59,8 @@ workflows:
     name: iOS Release (App Store)
     max_build_duration: 60
     instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: BAMC-APP
     environment:
       flutter: stable
       xcode: latest
@@ -67,6 +69,9 @@ workflows:
       # (keychain initialize / app-store-connect fetch-signing-files /
       # xcode-project use-profiles) — no declarative ios_signing block
       # here, since running both at once conflicts with each other.
+      # The `integrations` block above exports the BAMC-APP key as
+      # APP_STORE_CONNECT_* env vars, which the app-store-connect CLI
+      # picks up automatically.
       vars:
         BUNDLE_ID: "ae.bluearrow.bamc"
         XCODE_WORKSPACE: "Runner.xcworkspace"
