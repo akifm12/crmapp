@@ -84,19 +84,14 @@ workflows:
           find . -name "Podfile" -execdir pod install \;
       - name: Set up keychain
         script: keychain initialize
-      - name: Show available signing CLI options (diagnostic)
+      - name: Generate certificate signing key
         script: |
-          echo "=== certificates create --help ==="
-          app-store-connect certificates create --help || true
-          echo "=== fetch-signing-files --help ==="
-          app-store-connect fetch-signing-files --help || true
-      - name: Create a fresh distribution certificate
-        script: |
-          app-store-connect certificates create --type IOS_DISTRIBUTION --save
-      - name: Fetch/create provisioning profile
+          openssl genrsa -out $CM_BUILD_DIR/ios_distribution.key 2048
+      - name: Fetch/create signing files
         script: |
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
+            --certificate-key "@file:$CM_BUILD_DIR/ios_distribution.key" \
             --create
       - name: Set up code signing settings on Xcode project
         script: |
