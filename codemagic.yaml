@@ -65,13 +65,13 @@ workflows:
       flutter: stable
       xcode: latest
       cocoapods: default
-      # Signing is handled entirely by the explicit script steps below
-      # (keychain initialize / app-store-connect fetch-signing-files /
-      # xcode-project use-profiles) — no declarative ios_signing block
-      # here, since running both at once conflicts with each other.
-      # The `integrations` block above exports the BAMC-APP key as
-      # APP_STORE_CONNECT_* env vars, which the app-store-connect CLI
-      # picks up automatically.
+      groups:
+        # ios_signing group holds IOS_CERT_P12_PASSWORD (chosen by you) and,
+        # after the one-time export step below, CM_IOS_CERTIFICATE_P12
+        # (base64 of the persisted cert+key — reused on every future build
+        # instead of creating a new Apple Distribution certificate each time,
+        # which Apple's account-level limit won't allow).
+        - ios_signing
       vars:
         BUNDLE_ID: "ae.bluearrow.bamc"
         XCODE_WORKSPACE: "Runner.xcworkspace"
@@ -84,18 +84,36 @@ workflows:
           find . -name "Podfile" -execdir pod install \;
       - name: Set up keychain
         script: keychain initialize
-      - name: Generate certificate signing key
+      - name: Import persisted certificate (if already saved)
         script: |
-          openssl genrsa -out $CM_BUILD_DIR/ios_distribution.key 2048
+          if [ -n "$CM_IOS_CERTIFICATE_P12" ]; then
+            echo "$CM_IOS_CERTIFICATE_P12" | base64 --decode > $CM_BUILD_DIR/ios_distribution.p12
+            keychain add-certificates \
+              --certificate $CM_BUILD_DIR/ios_distribution.p12 \
+              --certificate-password "$IOS_CERT_P12_PASSWORD"
+          fi
       - name: Fetch/create signing files
         script: |
-          app-store-connect fetch-signing-files "$BUNDLE_ID" \
-            --type IOS_APP_STORE \
-            --certificate-key "@file:$CM_BUILD_DIR/ios_distribution.key" \
-            --create
-      - name: Import certificate into the build keychain
-        script: |
-          keychain add-certificates
+          if [ -z "$CM_IOS_CERTIFICATE_P12" ]; then
+            # First-ever run: generate a new key and create the certificate.
+            openssl genrsa -out $CM_BUILD_DIR/ios_distribution.key 2048
+            app-store-connect fetch-signing-files "$BUNDLE_ID" \
+              --type IOS_APP_STORE \
+              --certificate-key "@file:$CM_BUILD_DIR/ios_distribution.key" \
+              --create
+            CERT_FILE=$(ls -t "/Users/builder/Library/Developer/Xcode/UserData/Certificates"/*.cer | head -1)
+            openssl pkcs12 -export \
+              -inkey $CM_BUILD_DIR/ios_distribution.key \
+              -in "$CERT_FILE" \
+              -out $CM_BUILD_DIR/ios_distribution_export.p12 \
+              -password "pass:$IOS_CERT_P12_PASSWORD"
+            echo "Certificate exported to artifacts as ios_distribution_export.p12 — download it, base64-encode it, and save it as CM_IOS_CERTIFICATE_P12 so future builds reuse it instead of creating a new one."
+          else
+            # Certificate already persisted and imported above — just fetch/create the profile.
+            app-store-connect fetch-signing-files "$BUNDLE_ID" \
+              --type IOS_APP_STORE \
+              --create
+          fi
       - name: Set up code signing settings on Xcode project
         script: |
           xcode-project use-profiles
@@ -106,6 +124,7 @@ workflows:
             --export-options-plist=/Users/builder/export_options.plist
     artifacts:
       - build/ios/ipa/*.ipa
+      - ios_distribution_export.p12
       - /tmp/xcodebuild_logs/*.log
     publishing:
       email:
