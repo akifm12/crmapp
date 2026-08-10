@@ -93,6 +93,9 @@ workflows:
             --type IOS_APP_STORE \
             --certificate-key "@file:$CM_BUILD_DIR/ios_distribution.key" \
             --create
+      - name: Import certificate into the build keychain
+        script: |
+          keychain add-certificates
       - name: Set up code signing settings on Xcode project
         script: |
           xcode-project use-profiles
