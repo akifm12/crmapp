@@ -63,11 +63,10 @@ workflows:
       flutter: stable
       xcode: latest
       cocoapods: default
-      ios_signing:
-        # Connect your Apple Developer account in Codemagic under
-        # Integrations → Apple Developer Portal, then reference it here.
-        distribution_type: app_store
-        bundle_identifier: ae.bluearrow.bamc
+      # Signing is handled entirely by the explicit script steps below
+      # (keychain initialize / app-store-connect fetch-signing-files /
+      # xcode-project use-profiles) — no declarative ios_signing block
+      # here, since running both at once conflicts with each other.
       vars:
         BUNDLE_ID: "ae.bluearrow.bamc"
         XCODE_WORKSPACE: "Runner.xcworkspace"
