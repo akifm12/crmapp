@@ -93,11 +93,13 @@ workflows:
               --certificate-password "$IOS_CERT_P12_PASSWORD"
             # fetch-signing-files tracks certificates by private key, separately from
             # the system keychain — extract the key so it recognizes this cert as ours
-            # instead of trying to save a fresh copy of it (and failing).
+            # instead of trying to save a fresh copy of it (and failing). Pipe through
+            # `openssl rsa` to strip the "Bag Attributes" header pkcs12 prints, which
+            # fetch-signing-files rejects as an invalid key file.
             openssl pkcs12 -in $CM_BUILD_DIR/ios_distribution.p12 \
               -nocerts -nodes \
               -passin "pass:$IOS_CERT_P12_PASSWORD" \
-              -out $CM_BUILD_DIR/ios_distribution.key
+              | openssl rsa -out $CM_BUILD_DIR/ios_distribution.key
           fi
       - name: Fetch/create signing files
         script: |
