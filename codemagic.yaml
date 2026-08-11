@@ -91,6 +91,13 @@ workflows:
             keychain add-certificates \
               --certificate $CM_BUILD_DIR/ios_distribution.p12 \
               --certificate-password "$IOS_CERT_P12_PASSWORD"
+            # fetch-signing-files tracks certificates by private key, separately from
+            # the system keychain — extract the key so it recognizes this cert as ours
+            # instead of trying to save a fresh copy of it (and failing).
+            openssl pkcs12 -in $CM_BUILD_DIR/ios_distribution.p12 \
+              -nocerts -nodes \
+              -passin "pass:$IOS_CERT_P12_PASSWORD" \
+              -out $CM_BUILD_DIR/ios_distribution.key
           fi
       - name: Fetch/create signing files
         script: |
@@ -111,9 +118,13 @@ workflows:
               --certificate $CM_BUILD_DIR/ios_distribution_export.p12 \
               --certificate-password "$IOS_CERT_P12_PASSWORD"
           else
-            # Certificate already persisted and imported above — just fetch/create the profile.
+            # Certificate already persisted and imported above — pass the same key so
+            # the tool matches it against the existing certificate instead of trying
+            # to save a new one.
             app-store-connect fetch-signing-files "$BUNDLE_ID" \
               --type IOS_APP_STORE \
+              --certificate-key "@file:$CM_BUILD_DIR/ios_distribution.key" \
+              --p12-password "$IOS_CERT_P12_PASSWORD" \
               --create
           fi
       - name: Set up code signing settings on Xcode project
