@@ -135,9 +135,7 @@ workflows:
         notify:
           success: true
           failure: true
-      # Uncomment once your App Store Connect integration is set up under
-      # this app's Integrations → App Store Connect:
-      # app_store_connect:
-      #   auth: integration
-      #   submit_to_testflight: true
-      #   submit_to_app_store: false
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        submit_to_app_store: false
