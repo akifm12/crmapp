@@ -56,6 +56,7 @@ class _ScreeningDemoState extends State<ScreeningDemo> {
   _Entry? _hit;
   double _score = 0;
   bool _busy = false;
+  final _resultKey = GlobalKey();
 
   @override
   void dispose() {
@@ -96,6 +97,13 @@ class _ScreeningDemoState extends State<ScreeningDemo> {
       _busy = false;
       _score = bestScore;
       _hit = bestScore >= 0.72 ? best : null;
+    });
+    // bring the result into view — it lands below the fold on most phones
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final ctx = _resultKey.currentContext;
+      if (ctx != null) {
+        Scrollable.ensureVisible(ctx, duration: const Duration(milliseconds: 400), curve: Curves.easeOut, alignment: 0.6);
+      }
     });
   }
 
@@ -165,7 +173,7 @@ class _ScreeningDemoState extends State<ScreeningDemo> {
             ],
             if (done) ...[
               const SizedBox(height: 14),
-              FadeSlideIn(child: _result(context)),
+              KeyedSubtree(key: _resultKey, child: FadeSlideIn(child: _result(context))),
             ],
             const SizedBox(height: 10),
             Text('Simulation using fictional sample data — not a real screening.',
