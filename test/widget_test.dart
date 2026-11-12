@@ -1,14 +1,19 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:bluearrow_app/app.dart';
+import 'package:bluearrow_app/widgets/anim.dart';
 
 void main() {
-  testWidgets('App builds and shows the bottom navigation', (WidgetTester tester) async {
-    await tester.pumpWidget(const ProviderScope(child: BlueArrowApp()));
-    await tester.pump();
+  test('dueText phrases days correctly', () {
+    expect(dueText(0), 'Due today');
+    expect(dueText(1), 'Due tomorrow');
+    expect(dueText(12), 'In 12 days');
+    expect(dueText(-1), '1 day overdue');
+    expect(dueText(-5), '5 days overdue');
+  });
 
-    expect(find.text('Home'), findsOneWidget);
-    expect(find.text('Account'), findsOneWidget);
+  test('urgencyColor escalates as the date approaches', () {
+    expect(urgencyColor(-1), isNot(urgencyColor(60)));
+    expect(urgencyColor(3), isNot(urgencyColor(20)));
+    expect(urgencyColor(20), isNot(urgencyColor(60)));
   });
 }

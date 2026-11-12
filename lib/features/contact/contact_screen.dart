@@ -6,7 +6,8 @@ import '../../core/api_client.dart';
 import '../../core/theme.dart';
 
 class ContactScreen extends StatefulWidget {
-  const ContactScreen({super.key});
+  final String? initialMessage;
+  const ContactScreen({super.key, this.initialMessage});
 
   @override
   State<ContactScreen> createState() => _ContactScreenState();
@@ -22,6 +23,12 @@ class _ContactScreenState extends State<ContactScreen> {
   bool _submitting = false;
   String? _error;
   bool _sent = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialMessage != null) _messageCtrl.text = widget.initialMessage!;
+  }
 
   @override
   void dispose() {

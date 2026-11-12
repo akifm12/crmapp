@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/api_client.dart';
 import '../../core/cached_fetch.dart';
+import '../../core/user_prefs.dart';
 import '../../models/compliance_deadline.dart';
 import '../../models/user_deadline.dart';
 
@@ -19,7 +20,7 @@ class ComplianceCalendarData {
       );
 }
 
-final selectedSectorProvider = StateProvider<String?>((ref) => null);
+final selectedSectorProvider = StateProvider<String?>((ref) => ref.read(userPrefsProvider).sector);
 
 final complianceCalendarProvider = FutureProvider.family<ComplianceCalendarData, String?>(
   (ref, sector) => fetchWithCache(

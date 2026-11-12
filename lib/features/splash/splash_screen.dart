@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme.dart';
+import '../../core/user_prefs.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -25,7 +27,9 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
     _controller.forward();
     Future.delayed(const Duration(milliseconds: 1600), () {
-      if (mounted) context.go('/');
+      if (!mounted) return;
+      final onboarded = ProviderScope.containerOf(context).read(userPrefsProvider).onboarded;
+      context.go(onboarded ? '/' : '/welcome');
     });
   }
 

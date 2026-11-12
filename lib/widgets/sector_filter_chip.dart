@@ -40,9 +40,9 @@ class SectorFilterRow extends StatelessWidget {
       selected: isSelected,
       onSelected: (_) => onSelected(value),
       selectedColor: BrandColors.primary,
-      labelStyle: TextStyle(color: isSelected ? Colors.white : Colors.black87),
-      backgroundColor: Colors.white,
-      side: BorderSide(color: Colors.grey.shade300),
+      labelStyle: TextStyle(color: isSelected ? Colors.white : null),
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      side: BorderSide(color: context.hairline),
     );
   }
 }
