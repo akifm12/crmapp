@@ -203,6 +203,7 @@ class _GeneralCalendarTabState extends ConsumerState<GeneralCalendarTab> {
         ),
         const SizedBox(height: 6),
         GridView.builder(
+          padding: EdgeInsets.zero,
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           itemCount: lead + daysInMonth,

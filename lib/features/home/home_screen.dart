@@ -7,6 +7,7 @@ import '../../core/user_prefs.dart';
 import '../../models/compliance_deadline.dart';
 import '../../widgets/anim.dart';
 import '../../widgets/category_badge.dart';
+import '../../widgets/firm_widgets.dart';
 import '../auth/auth_provider.dart';
 import '../compliance_calendar/compliance_provider.dart';
 import '../compliance_calendar/deadline_utils.dart';
@@ -17,6 +18,7 @@ import 'home_provider.dart';
 const kTabCalendar = 1;
 const kTabSentinel = 2;
 const kTabTools = 3;
+const kTabFirm = 4;
 
 class HomeScreen extends ConsumerWidget {
   final void Function(int tab) onOpenTab;
@@ -51,7 +53,14 @@ class HomeScreen extends ConsumerWidget {
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
+                  const FadeSlideIn(child: FirmStats()),
+                  const SizedBox(height: 14),
+                  const FadeSlideIn(index: 1, child: ContactButtons()),
+                  const SizedBox(height: 24),
+                  const SectionTitle('Your compliance snapshot'),
+                  const SizedBox(height: 10),
                   FadeSlideIn(
+                    index: 2,
                     child: _NextDeadline(
                       loading: calAsync.isLoading && deadlines.isEmpty,
                       next: next,
@@ -62,16 +71,30 @@ class HomeScreen extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 14),
-                  FadeSlideIn(index: 1, child: SentinelPromoCard(onTap: () => onOpenTab(kTabSentinel))),
-                  const SizedBox(height: 22),
-                  _title(context, 'Quick actions'),
-                  const SizedBox(height: 10),
-                  FadeSlideIn(index: 2, child: _quickActions(context, prefs)),
-                  const SizedBox(height: 24),
-                  _title(context, 'Latest updates', onAll: () => context.push('/news')),
-                  const SizedBox(height: 10),
+                  FadeSlideIn(index: 3, child: SentinelPromoCard(onTap: () => onOpenTab(kTabSentinel))),
+                  const SizedBox(height: 26),
+                  SectionTitle('What we do', subtitle: 'Compliance advisory by sector', onAll: () => onOpenTab(kTabFirm)),
+                  const SizedBox(height: 12),
                   ...homeAsync.when(
                     loading: () => [const Padding(padding: EdgeInsets.all(24), child: Center(child: CircularProgressIndicator()))],
+                    error: (_, _) => [Text('Services are unavailable offline.', style: TextStyle(color: context.muted))],
+                    data: (d) => [
+                      ServicesStrip(services: d.services),
+                      const SizedBox(height: 26),
+                      const SectionTitle('Built by us', subtitle: 'Software we design and run ourselves'),
+                      const SizedBox(height: 12),
+                      TechStrip(tiles: d.techServices),
+                    ],
+                  ),
+                  const SizedBox(height: 26),
+                  const SectionTitle('Free compliance tools'),
+                  const SizedBox(height: 12),
+                  FadeSlideIn(index: 2, child: _quickActions(context, prefs)),
+                  const SizedBox(height: 26),
+                  SectionTitle('Latest updates', onAll: () => context.push('/news')),
+                  const SizedBox(height: 10),
+                  ...homeAsync.when(
+                    loading: () => const <Widget>[],
                     error: (_, _) => [Text('News unavailable offline.', style: TextStyle(color: context.muted))],
                     data: (d) => [
                       for (final n in d.news)
@@ -80,8 +103,8 @@ class HomeScreen extends ConsumerWidget {
                           child: Card(
                             child: ListTile(
                               contentPadding: const EdgeInsets.all(14),
-                              title: Text(n.title, maxLines: 2, overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(fontWeight: FontWeight.w700)),
+                              title: Text(n.title,
+                                  maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w700)),
                               subtitle: Padding(
                                 padding: const EdgeInsets.only(top: 8),
                                 child: Align(
@@ -95,8 +118,10 @@ class HomeScreen extends ConsumerWidget {
                         ),
                     ],
                   ),
-                  const SizedBox(height: 14),
-                  _contactCta(context),
+                  const SizedBox(height: 16),
+                  const SectionTitle('Talk to us'),
+                  const SizedBox(height: 12),
+                  const OfficeCard(),
                 ]),
               ),
             ),
@@ -105,14 +130,6 @@ class HomeScreen extends ConsumerWidget {
       ),
     );
   }
-
-  Widget _title(BuildContext context, String t, {VoidCallback? onAll}) => Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(t, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
-          if (onAll != null) TextButton(onPressed: onAll, child: const Text('See all')),
-        ],
-      );
 
   Widget _quickActions(BuildContext context, UserPrefs prefs) {
     final items = <({IconData icon, String label, String sub, VoidCallback onTap, Color color})>[
@@ -147,6 +164,7 @@ class HomeScreen extends ConsumerWidget {
     ];
     return GridView.count(
       crossAxisCount: 2,
+      padding: EdgeInsets.zero,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       mainAxisSpacing: 12,
@@ -184,23 +202,6 @@ class HomeScreen extends ConsumerWidget {
       ],
     );
   }
-
-  Widget _contactCta(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(18),
-        child: Row(
-          children: [
-            const Expanded(
-              child: Text('Need a human? Talk to our compliance team.', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
-            ),
-            const SizedBox(width: 10),
-            FilledButton(onPressed: () => context.push('/contact'), child: const Text('Contact')),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 class _Header extends StatelessWidget {
@@ -217,7 +218,7 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     final first = (name ?? '').trim().split(' ').first;
     return Container(
-      padding: EdgeInsets.fromLTRB(20, MediaQuery.of(context).padding.top + 18, 20, 22),
+      padding: EdgeInsets.fromLTRB(20, MediaQuery.of(context).padding.top + 10, 8, 22),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           colors: [Color(0xFF0B1B4D), BrandColors.primary],
@@ -229,29 +230,53 @@ class _Header extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(first.isEmpty ? _greeting : '$_greeting, $first',
-              style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w800)),
-          const SizedBox(height: 6),
-          Text('UAE AML & regulatory compliance, made simple.',
-              style: TextStyle(color: Colors.white.withValues(alpha: 0.82), fontSize: 14)),
-          const SizedBox(height: 14),
-          InkWell(
-            onTap: () => context.push('/sector'),
-            borderRadius: BorderRadius.circular(20),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.16), borderRadius: BorderRadius.circular(20)),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(kSectors[sector]?.icon ?? Icons.public, size: 16, color: Colors.white),
-                  const SizedBox(width: 6),
-                  Text(kSectors[sector]?.short ?? 'All sectors',
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13)),
-                  const SizedBox(width: 4),
-                  const Icon(Icons.expand_more, size: 16, color: Colors.white70),
-                ],
+          Row(
+            children: [
+              Image.asset('assets/splash/splash_logo.png', height: 34),
+              const SizedBox(width: 10),
+              const Expanded(
+                child: Text('Blue Arrow Management Consultants',
+                    maxLines: 2, style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 13, height: 1.2)),
               ),
+              IconButton(
+                tooltip: 'Account & settings',
+                onPressed: () => context.push('/me'),
+                icon: const Icon(Icons.account_circle_outlined, color: Colors.white),
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(first.isEmpty ? _greeting : '$_greeting, $first',
+                    style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 14, fontWeight: FontWeight.w600)),
+                const SizedBox(height: 4),
+                const Text('UAE AML & regulatory compliance, handled by experts.',
+                    style: TextStyle(color: Colors.white, fontSize: 25, fontWeight: FontWeight.w900, height: 1.15)),
+                const SizedBox(height: 14),
+                InkWell(
+                  onTap: () => context.push('/sector'),
+                  borderRadius: BorderRadius.circular(20),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.16), borderRadius: BorderRadius.circular(20)),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(kSectors[sector]?.icon ?? Icons.public, size: 16, color: Colors.white),
+                        const SizedBox(width: 6),
+                        Text(kSectors[sector]?.short ?? 'All sectors',
+                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13)),
+                        const SizedBox(width: 4),
+                        const Icon(Icons.expand_more, size: 16, color: Colors.white70),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -313,7 +338,7 @@ class _NextDeadline extends StatelessWidget {
                     Text(next == null ? 'You are all caught up' : 'NEXT DEADLINE',
                         style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1, color: context.muted)),
                     const SizedBox(height: 4),
-                    Text(next?.title ?? 'No upcoming deadlines for your sector.',
+                    Text(next?.title ?? 'No dated deadlines yet — open the calendar to add yours.',
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, height: 1.2)),

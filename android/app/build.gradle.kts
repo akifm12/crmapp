@@ -54,6 +54,10 @@ android {
     }
 
     buildTypes {
+        debug {
+            // side-by-side install next to the Play Store build for on-device testing
+            applicationIdSuffix = ".test"
+        }
         release {
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             signingConfig = if (keystorePropertiesFile.exists()) {

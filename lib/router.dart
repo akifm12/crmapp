@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 
 import 'features/about/about_screen.dart';
+import 'features/account/account_screen.dart';
 import 'features/auth/login_screen.dart';
 import 'features/auth/register_screen.dart';
 import 'features/contact/contact_screen.dart';
@@ -26,6 +27,7 @@ final router = GoRouter(
       path: '/',
       builder: (context, state) => AppShell(initialTab: int.tryParse(state.uri.queryParameters['tab'] ?? '') ?? 0),
     ),
+    GoRoute(path: '/me', builder: (context, state) => const AccountScreen()),
     GoRoute(path: '/welcome', builder: (context, state) => const SectorPickerScreen()),
     GoRoute(path: '/sector', builder: (context, state) => const SectorPickerScreen(fromSettings: true)),
     GoRoute(path: '/health-check', builder: (context, state) => const HealthCheckScreen()),

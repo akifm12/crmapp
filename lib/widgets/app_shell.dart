@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../features/account/account_screen.dart';
+import '../features/firm/firm_screen.dart';
 import '../features/compliance_calendar/compliance_calendar_screen.dart';
 import '../features/home/home_screen.dart';
 import '../features/sentinel/sentinel_screen.dart';
@@ -29,7 +29,7 @@ class _AppShellState extends State<AppShell> {
     const ComplianceCalendarScreen(),
     const SentinelScreen(),
     const ToolsScreen(),
-    const AccountScreen(),
+    FirmScreen(onOpenTab: _go),
   ];
 
   void _go(int i) {
@@ -53,7 +53,7 @@ class _AppShellState extends State<AppShell> {
               icon: Icon(Icons.dashboard_customize_outlined),
               selectedIcon: Icon(Icons.dashboard_customize),
               label: 'Tools'),
-          NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person), label: 'Me'),
+          NavigationDestination(icon: Icon(Icons.business_outlined), selectedIcon: Icon(Icons.business), label: 'Blue Arrow'),
         ],
       ),
     );
