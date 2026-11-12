@@ -32,6 +32,10 @@ dependencies:
   # Calendar
   add_2_calendar: 3.0.1
 
+  # Deadline reminders (scheduled on-device, no server needed)
+  flutter_local_notifications: ^18.0.1
+  timezone: ^0.9.4
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

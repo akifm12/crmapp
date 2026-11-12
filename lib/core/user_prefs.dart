@@ -15,6 +15,7 @@ class UserPrefs {
   final DateTime? healthDate;
   final Set<String> checklist; // "<sector>:<item>" ticked document items
   final Set<int> bookmarks; // news ids
+  final bool remindersOn;
 
   const UserPrefs({
     this.loaded = false,
@@ -26,6 +27,7 @@ class UserPrefs {
     this.healthDate,
     this.checklist = const {},
     this.bookmarks = const {},
+    this.remindersOn = false,
   });
 
   UserPrefs copyWith({
@@ -38,6 +40,7 @@ class UserPrefs {
     DateTime? healthDate,
     Set<String>? checklist,
     Set<int>? bookmarks,
+    bool? remindersOn,
   }) =>
       UserPrefs(
         loaded: loaded,
@@ -49,6 +52,7 @@ class UserPrefs {
         healthDate: healthDate ?? this.healthDate,
         checklist: checklist ?? this.checklist,
         bookmarks: bookmarks ?? this.bookmarks,
+        remindersOn: remindersOn ?? this.remindersOn,
       );
 }
 
@@ -76,6 +80,7 @@ class UserPrefsNotifier extends StateNotifier<UserPrefs> {
       healthDate: DateTime.tryParse(sp.getString('health_date') ?? ''),
       checklist: (sp.getStringList('checklist') ?? const []).toSet(),
       bookmarks: (jsonDecode(sp.getString('bookmarks') ?? '[]') as List).cast<int>().toSet(),
+      remindersOn: sp.getBool('reminders') ?? false,
     );
   }
 
@@ -116,6 +121,11 @@ class UserPrefsNotifier extends StateNotifier<UserPrefs> {
     if (!next.add(key)) next.remove(key);
     state = state.copyWith(checklist: next);
     await (await _prefs).setStringList('checklist', next.toList());
+  }
+
+  Future<void> setReminders(bool on) async {
+    state = state.copyWith(remindersOn: on);
+    await (await _prefs).setBool('reminders', on);
   }
 
   Future<void> toggleBookmark(int newsId) async {

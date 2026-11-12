@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../core/reminder_service.dart';
 import '../../core/theme.dart';
 import '../../core/user_prefs.dart';
 import '../auth/auth_provider.dart';
@@ -105,6 +106,29 @@ class AccountScreen extends ConsumerWidget {
             subtitle: Text(kSectors[prefs.sector]?.label ?? 'All sectors'),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push('/sector'),
+          ),
+          const Divider(height: 1),
+          SwitchListTile(
+            secondary: const Icon(Icons.notifications_active_outlined, color: BrandColors.primary),
+            title: const Text('Deadline reminders'),
+            subtitle: const Text('9:00 am, 7 days before, the day before and on the day'),
+            value: prefs.remindersOn,
+            onChanged: (on) async {
+              final notifier = ref.read(userPrefsProvider.notifier);
+              if (!on) {
+                await notifier.setReminders(false);
+                return;
+              }
+              final allowed = await ReminderService.instance.requestPermission();
+              if (!context.mounted) return;
+              if (allowed) {
+                await notifier.setReminders(true);
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Notifications are blocked. Enable them in your phone settings.')),
+                );
+              }
+            },
           ),
           const Divider(height: 1),
           Padding(
